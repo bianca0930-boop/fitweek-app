@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>核心周计划</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#14171C">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171C'/%3E%3Crect x='16' y='44' width='68' height='12' rx='4' fill='%23C9F04D'/%3E%3Crect x='8' y='34' width='12' height='32' rx='3' fill='%23F2F3F0'/%3E%3Crect x='80' y='34' width='12' height='32' rx='3' fill='%23F2F3F0'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171C'/%3E%3Crect x='16' y='44' width='68' height='12' rx='4' fill='%23C9F04D'/%3E%3Crect x='8' y='34' width='12' height='32' rx='3' fill='%23F2F3F0'/%3E%3Crect x='80' y='34' width='12' height='32' rx='3' fill='%23F2F3F0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#14171C;
+    --surface:#1B1F26;
+    --surface-2:#20252D;
+    --border:#2A2F38;
+    --accent:#C9F04D;
+    --accent-dim:#8FA83A;
+    --coral:#FF6B4A;
+    --text:#F2F3F0;
+    --muted:#8B93A1;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,sans-serif;
+    display:flex;
+    justify-content:center;
+    overflow-x:hidden;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    padding-bottom:78px;
+    position:relative;
+  }
+  .num{font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;}
+
+  header{
+    padding:28px 20px 14px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  header .title{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:34px;
+    line-height:1;
+    color:var(--text);
+  }
+  header .sub{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:6px;
+  }
+  header .streak{
+    text-align:right;
+  }
+  header .streak .n{
+    font-size:30px;
+    color:var(--accent);
+  }
+  header .streak .l{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:-4px;
+  }
+
+  .view{display:none; padding:0 20px 20px;}
+  .view.active{display:block;}
+
+  /* ---- Widget preview card (Stats) ---- */
+  .widget-card{
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:22px 20px;
+    margin-bottom:18px;
+  }
+  .widget-top{
+    display:flex;
+    align-items:center;
+    gap:20px;
+  }
+  .ring-wrap{position:relative; width:104px; height:104px; flex-shrink:0;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-center{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .ring-center .pct{font-family:'Bebas Neue',sans-serif; font-size:26px;}
+  .ring-center .lbl{font-size:10px; color:var(--muted);}
+  .widget-info .big{font-size:15px; color:var(--text); font-weight:600;}
+  .widget-info .desc{font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.5;}
+
+  .day-bars{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+    gap:6px;
+  }
+  .day-bar{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .bar-track{
+    width:100%;
+    height:64px;
+    background:var(--surface-2);
+    border-radius:8px;
+    display:flex;
+    align-items:flex-end;
+    overflow:hidden;
+  }
+  .bar-fill{
+    width:100%;
+    background:var(--accent);
+    border-radius:8px 8px 0 0;
+    transition:height .4s ease;
+  }
+  .bar-fill.rest{background:var(--border);}
+  .bar-fill.alt{background:var(--coral);}
+  .day-bar .dname{font-size:11px; color:var(--muted);}
+  .day-bar.today .dname{color:var(--accent); font-weight:700;}
+  .day-bar .dtag{font-size:9px; color:var(--muted);}
+
+  .stat-row{display:flex; gap:12px; margin-top:16px;}
+  .stat-box{
+    flex:1;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+  }
+  .stat-box .v{font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--text);}
+  .stat-box .k{font-size:11px; color:var(--muted); margin-top:2px;}
+
+  /* ---- Reminder card ---- */
+  .reminder-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px 18px;
+    margin-bottom:18px;
+  }
+  .reminder-top{display:flex; justify-content:space-between; align-items:center; gap:12px;}
+  .reminder-top .rt-title{font-size:14px; font-weight:700;}
+  .reminder-top .rt-status{font-size:11px; color:var(--muted); margin-top:3px;}
+  .btn-small{
+    background:var(--accent);
+    color:#14171C;
+    border:none;
+    border-radius:20px;
+    padding:9px 16px;
+    font-size:12.5px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+  .btn-small.off{background:var(--surface-2); color:var(--muted); border:1px solid var(--border);}
+  .reminder-note{font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.6;}
+
+  /* ---- Plan / Log list ---- */
+  .day-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:18px;
+    margin-bottom:14px;
+    overflow:hidden;
+  }
+  .day-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:16px 18px;
+    cursor:pointer;
+  }
+  .day-head .dh-left{display:flex; flex-direction:column; gap:3px;}
+  .day-head .dh-name{font-size:15px; font-weight:700;}
+  .day-head .dh-type{font-size:12px; color:var(--muted);}
+  .day-head .dh-badge{
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:20px;
+    background:var(--surface-2);
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .day-head .dh-badge.done{background:rgba(201,240,77,0.15); color:var(--accent);}
+  .day-head .dh-badge.alt{background:rgba(255,107,74,0.15); color:var(--coral);}
+  .day-head .dh-badge.rest{background:transparent; color:var(--muted); border:1px dashed var(--border);}
+
+  .ex-list{padding:0 18px 16px; display:none;}
+  .ex-list.open{display:block;}
+  .ex-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 0;
+    border-top:1px solid var(--border);
+  }
+  .ex-row:first-child{border-top:none;}
+  .chk{
+    width:22px; height:22px;
+    border-radius:7px;
+    border:1.5px solid var(--border);
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface-2);
+  }
+  .chk.on{background:var(--accent); border-color:var(--accent);}
+  .chk.on::after{content:"✓"; color:#14171C; font-size:13px; font-weight:800;}
+  .ex-name{font-size:14px; flex:1;}
+  .ex-name.on{color:var(--muted); text-decoration:line-through;}
+  .ex-spec{font-size:12px; color:var(--muted); font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;}
+  .rest-note{color:var(--muted); font-size:13px; padding:4px 0 14px;}
+
+  /* ---- performance / status block (log view) ---- */
+  .perf-block{
+    margin-top:4px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+  .perf-label{font-size:11.5px; color:var(--muted); margin-bottom:8px;}
+  .status-pills{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .pill{
+    padding:8px 13px;
+    border-radius:20px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-size:12.5px;
+    cursor:pointer;
+  }
+  .pill.active{background:var(--accent); border-color:var(--accent); color:#14171C; font-weight:700;}
+  .pill.active.alt-active{background:var(--coral); border-color:var(--coral); color:#14171C;}
+  .alt-input{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    padding:10px 12px;
+    margin-bottom:14px;
+  }
+  .perf-grid{display:flex; gap:12px; margin-bottom:14px;}
+  .perf-field{flex:1;}
+  .perf-field label{font-size:11px; color:var(--muted); display:block; margin-bottom:6px;}
+  .perf-field input[type=number], .perf-field select{
+    width:100%;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:9px 10px;
+  }
+  textarea.note-input{
+    width:100%;
+    min-height:64px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    padding:10px 12px;
+    resize:vertical;
+  }
+
+  /* ---- Bottom nav ---- */
+  nav{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    display:flex;
+    justify-content:center;
+    background:rgba(20,23,28,0.92);
+    backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav .inner{
+    width:100%; max-width:480px;
+    display:flex;
+  }
+  nav button{
+    flex:1;
+    background:none; border:none;
+    color:var(--muted);
+    font-family:'Inter',sans-serif;
+    font-size:11.5px;
+    padding:12px 0 10px;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+  }
+  nav button.active{color:var(--accent);}
+  nav .ic{width:20px; height:20px;}
+
+  .section-label{
+    font-size:12px;
+    color:var(--muted);
+    margin:4px 0 12px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header>
+    <div>
+      <div class="title">核心周计划</div>
+      <div class="sub" id="weekRange">本周</div>
+    </div>
+    <div class="streak">
+      <div class="n num" id="streakNum">0</div>
+      <div class="l">连续打卡</div>
+    </div>
+  </header>
+
+  <!-- STATS / WIDGET VIEW -->
+  <section class="view" id="view-stats">
+    <div class="widget-card">
+      <div class="widget-top">
+        <div class="ring-wrap">
+          <svg width="104" height="104" viewBox="0 0 104 104">
+            <circle cx="52" cy="52" r="44" fill="none" stroke="#2A2F38" stroke-width="10"/>
+            <circle id="ringProgress" cx="52" cy="52" r="44" fill="none" stroke="#C9F04D" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"/>
+          </svg>
+          <div class="ring-center">
+            <div class="pct" id="ringPct">0%</div>
+            <div class="lbl">本周完成</div>
+          </div>
+        </div>
+        <div class="widget-info">
+          <div class="big" id="widgetBig">还没有训练记录</div>
+          <div class="desc" id="widgetDesc">开始今天的训练，打卡后这里会实时更新。</div>
+        </div>
+      </div>
+      <div class="day-bars" id="dayBars"></div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="v" id="statDone">0/0</div>
+        <div class="k">已完成训练日</div>
+      </div>
+      <div class="stat-box">
+        <div class="v" id="statExercises">0</div>
+        <div class="k">本周完成动作数</div>
+      </div>
+    </div>
+
+    <div class="reminder-card">
+      <div class="reminder-top">
+        <div>
+          <div class="rt-title">每天 8:30 训练提醒</div>
+          <div class="rt-status" id="reminderStatus">尚未开启</div>
+        </div>
+        <button class="btn-small" id="reminderBtn">开启提醒</button>
+      </div>
+      <div class="reminder-note">受手机系统限制，网页应用无法在关闭状态下自主推送 —— 开启后，只要你在 8:30 之后打开这个APP（哪怕只是看一眼），就会立刻弹出当天的训练提醒。建议同时在小米的「时钟」里加一个 8:30 闹钟/日程提醒，点开就顺手打开本APP，双保险不会错过。</div>
+    </div>
+
+    <div class="section-label">把这个页面添加到桌面，就能像小组件一样随时看到本周运动量 →「浏览器菜单」-「添加到桌面/主屏幕」</div>
+  </section>
+
+  <!-- PLAN VIEW -->
+  <section class="view" id="view-plan">
+    <div class="section-label">根据你的目标（保持健康 · 减小腹 · 强核心 · 增肌塑形）与健身房+家庭器械条件生成</div>
+    <div id="planList"></div>
+  </section>
+
+  <!-- LOG VIEW (same cards, opened by default, log-focused) -->
+  <section class="view" id="view-log">
+    <div class="section-label">打钩记录完成的动作；如果没按计划完成，选择"今天休息"或"换了其他运动"，还可以记录强度、用时和感想</div>
+    <div id="logList"></div>
+  </section>
+
+</div>
+
+<nav>
+  <div class="inner">
+    <button data-view="stats" class="active">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      统计
+    </button>
+    <button data-view="plan">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 2v4M16 2v4M4 10h16"/></svg>
+      计划
+    </button>
+    <button data-view="log">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      打卡
+    </button>
+  </div>
+</nav>
+
+<script>
+/* ---------------- 数据：一周训练计划 ---------------- */
+const PLAN = [
+  { name:"周一", type:"力量 · 上肢 + 核心", place:"健身房", rest:false, exercises:[
+    {n:"坐姿推胸机", s:"3×12"},
+    {n:"高位下拉", s:"3×12"},
+    {n:"哑铃肩上推举", s:"3×12"},
+    {n:"悬垂举腿", s:"3×15"},
+    {n:"平板支撑", s:"3×45s"},
+  ]},
+  { name:"周二", type:"燃脂有氧 + 腹部核心", place:"健身房/居家", rest:false, exercises:[
+    {n:"跳绳 或 快走跑步机", s:"20min"},
+    {n:"卷腹", s:"3×20"},
+    {n:"俄罗斯转体", s:"3×20"},
+    {n:"侧平板支撑（左右各）", s:"3×30s"},
+  ]},
+  { name:"周三", type:"力量 · 下肢 + 臀腿", place:"健身房", rest:false, exercises:[
+    {n:"深蹲架深蹲", s:"3×12"},
+    {n:"腿举机", s:"3×12"},
+    {n:"哑铃箭步蹲（每侧）", s:"3×12"},
+    {n:"臀桥", s:"3×15"},
+  ]},
+  { name:"周四", type:"核心专项 + 拉伸放松", place:"居家", rest:false, exercises:[
+    {n:"死虫式", s:"3×12"},
+    {n:"鸟狗式（每侧）", s:"3×12"},
+    {n:"卷腹抬腿", s:"3×15"},
+    {n:"全身拉伸", s:"10min"},
+  ]},
+  { name:"周五", type:"力量 · 全身塑形", place:"健身房", rest:false, exercises:[
+    {n:"哑铃/壶铃硬拉", s:"3×12"},
+    {n:"绳索夹胸", s:"3×12"},
+    {n:"哑铃弯举 + 臂屈伸", s:"3×12"},
+    {n:"平板支撑", s:"3×45s"},
+  ]},
+  { name:"周六", type:"轻度有氧 + 核心巩固（可选）", place:"居家/户外", rest:false, exercises:[
+    {n:"椭圆机 或 快走", s:"20-30min"},
+    {n:"卷腹", s:"3×20"},
+    {n:"平板支撑", s:"3×1min"},
+  ]},
+  { name:"周日", type:"休息日", place:"", rest:true, exercises:[] },
+];
+
+const STATUS_LABELS = {
+  planned: "按计划完成",
+  partial: "部分完成",
+  rest: "今天休息",
+  alt: "换了其他运动",
+};
+
+/* ---------------- 存储 ---------------- */
+const STORE_KEY = "fitweek_state_v2";
+
+function getWeekId(d=new Date()){
+  const date = new Date(d);
+  date.setHours(0,0,0,0);
+  date.setDate(date.getDate() + 3 - ((date.getDay()+6)%7));
+  const week1 = new Date(date.getFullYear(),0,4);
+  const weekNo = 1 + Math.round(((date - week1) / 86400000 - 3 + ((week1.getDay()+6)%7)) / 7);
+  return `${date.getFullYear()}-W${weekNo}`;
+}
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function loadState(){
+  let raw;
+  try{ raw = JSON.parse(localStorage.getItem(STORE_KEY) || "{}"); }catch(e){ raw = {}; }
+  const wid = getWeekId();
+  if(!raw.weekId || raw.weekId !== wid){
+    raw = { weekId: wid, streak: raw.streak || 0, lastCompleteWeek: raw.lastCompleteWeek || null, lastNotifiedDate: raw.lastNotifiedDate || null, days: {} };
+  }
+  if(!raw.days) raw.days = {};
+  if(raw.lastNotifiedDate === undefined) raw.lastNotifiedDate = null;
+  return raw;
+}
+function saveState(s){ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+
+let state = loadState();
+
+function ensureDay(idx){
+  if(!state.days[idx]) state.days[idx] = { ex:{} };
+  if(!state.days[idx].ex) state.days[idx].ex = {};
+  return state.days[idx];
+}
+function isChecked(dayIdx, exIdx){
+  const d = state.days[dayIdx];
+  return !!(d && d.ex && d.ex[exIdx]);
+}
+function toggleCheck(dayIdx, exIdx){
+  const d = ensureDay(dayIdx);
+  d.ex[exIdx] = !d.ex[exIdx];
+  saveState(state);
+  renderAll();
+}
+function setStatus(dayIdx, status){
+  const d = ensureDay(dayIdx);
+  d.status = (d.status === status) ? undefined : status;
+  saveState(state);
+  renderAll();
+}
+function setField(dayIdx, field, value){
+  const d = ensureDay(dayIdx);
+  d[field] = value;
+  saveState(state);
+  renderStats(); // 轻量刷新，避免输入框失焦
+}
+
+function dayCompletion(dayIdx){
+  const day = PLAN[dayIdx];
+  if(day.rest) return null;
+  const d = state.days[dayIdx];
+  if(d && d.status === 'alt') return 1;
+  if(d && d.status === 'rest') return 0;
+  const total = day.exercises.length;
+  if(total===0) return 0;
+  let done = 0;
+  for(let i=0;i<total;i++){ if(isChecked(dayIdx,i)) done++; }
+  return done/total;
+}
+
+/* ---------------- 渲染 ---------------- */
+const todayIdx = (new Date().getDay()+6)%7; // 周一=0
+
+function renderHeader(){
+  const now = new Date();
+  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  document.getElementById("weekRange").textContent = `${fmt(monday)} - ${fmt(sunday)}`;
+  document.getElementById("streakNum").textContent = state.streak || 0;
+}
+
+function renderStats(){
+  const trainDays = PLAN.filter(d=>!d.rest).length;
+  let doneDaysFull = 0, totalExDone = 0, weightedSum = 0;
+
+  PLAN.forEach((day, idx)=>{
+    if(day.rest) return;
+    const c = dayCompletion(idx);
+    weightedSum += c;
+    day.exercises.forEach((_,i)=>{ if(isChecked(idx,i)) totalExDone++; });
+    if(c === 1) doneDaysFull++;
+  });
+
+  const overallPct = trainDays ? Math.round((weightedSum/trainDays)*100) : 0;
+
+  const circumference = 276.5;
+  const offset = circumference - (circumference * overallPct/100);
+  document.getElementById("ringProgress").setAttribute("stroke-dashoffset", offset);
+  document.getElementById("ringPct").textContent = overallPct + "%";
+
+  document.getElementById("statDone").textContent = `${doneDaysFull}/${trainDays}`;
+  document.getElementById("statExercises").textContent = totalExDone;
+
+  const bigEl = document.getElementById("widgetBig");
+  const descEl = document.getElementById("widgetDesc");
+  if(totalExDone===0 && overallPct===0){
+    bigEl.textContent = "还没有训练记录";
+    descEl.textContent = "开始今天的训练，打卡后这里会实时更新。";
+  } else if(overallPct>=100){
+    bigEl.textContent = "本周目标已完成 🎉";
+    descEl.textContent = "训练全部打卡，状态很稳，注意周日好好恢复。";
+  } else {
+    bigEl.textContent = `已完成 ${doneDaysFull} / ${trainDays} 个训练日`;
+    descEl.textContent = `本周完成度 ${overallPct}%，继续保持，核心和塑形效果需要持续积累。`;
+  }
+
+  const namesShort = ["一","二","三","四","五","六","日"];
+  const wrap = document.getElementById("dayBars");
+  wrap.innerHTML = "";
+  PLAN.forEach((day, idx)=>{
+    const d = state.days[idx];
+    const status = d && d.status;
+    const c = day.rest ? null : dayCompletion(idx);
+    let pct = day.rest ? 100 : Math.round((c||0)*100);
+    let fillClass = "";
+    let tag = "";
+    if(day.rest){ fillClass = "rest"; }
+    else if(status === 'rest'){ fillClass = "rest"; pct = 30; tag = "休"; }
+    else if(status === 'alt'){ fillClass = "alt"; pct = 100; tag = "替"; }
+    const el = document.createElement("div");
+    el.className = "day-bar" + (idx===todayIdx ? " today" : "");
+    el.innerHTML = `
+      <div class="bar-track">
+        <div class="bar-fill ${fillClass}" style="height:${Math.max(pct,4)}%"></div>
+      </div>
+      <div class="dname">${namesShort[idx]}</div>
+      <div class="dtag">${tag}</div>
+    `;
+    wrap.appendChild(el);
+  });
+}
+
+function exerciseListHTML(day, idx, interactive){
+  if(day.rest){
+    return `<div class="rest-note">今天安排休息 / 拉伸放松，让身体恢复。</div>`;
+  }
+  return day.exercises.map((ex,i)=>{
+    const on = isChecked(idx,i);
+    return `
+      <div class="ex-row" data-day="${idx}" data-ex="${i}" ${interactive?'style="cursor:pointer"':''}>
+        <div class="chk ${on?'on':''}"></div>
+        <div class="ex-name ${on?'on':''}">${ex.n}</div>
+        <div class="ex-spec">${ex.s}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function perfBlockHTML(day, idx){
+  if(day.rest) return "";
+  const d = state.days[idx] || {};
+  const status = d.status;
+  const pill = (key)=>`<div class="pill ${status===key?('active'+(key==='alt'?' alt-active':'')):''}" data-status="${idx}:${key}">${STATUS_LABELS[key]}</div>`;
+  return `
+    <div class="perf-block">
+      <div class="perf-label">今日完成情况</div>
+      <div class="status-pills">
+        ${pill('planned')}${pill('partial')}${pill('rest')}${pill('alt')}
+      </div>
+      ${status==='alt' ? `<input class="alt-input" data-field="${idx}:alt" placeholder="写下你做了什么运动，比如：骑行40分钟" value="${(d.alt||'').replace(/"/g,'&quot;')}">` : ''}
+      <div class="perf-label">运动表现</div>
+      <div class="perf-grid">
+        <div class="perf-field">
+          <label>强度自评 RPE (1-10)</label>
+          <select data-field="${idx}:rpe">
+            <option value="">未记录</option>
+            ${Array.from({length:10},(_,i)=>i+1).map(n=>`<option value="${n}" ${String(d.rpe)===String(n)?'selected':''}>${n}</option>`).join("")}
+          </select>
+        </div>
+        <div class="perf-field">
+          <label>实际用时 (分钟)</label>
+          <input type="number" min="0" placeholder="如 45" data-field="${idx}:duration" value="${d.duration||''}">
+        </div>
+      </div>
+      <div class="perf-label">今日感想</div>
+      <textarea class="note-input" placeholder="记录一下今天的状态、感受或需要注意的地方..." data-field="${idx}:note">${d.note||''}</textarea>
+    </div>
+  `;
+}
+
+function renderList(containerId, interactive){
+  const el = document.getElementById(containerId);
+  el.innerHTML = PLAN.map((day, idx)=>{
+    const c = dayCompletion(idx);
+    const d = state.days[idx];
+    const status = d && d.status;
+    let badge = "";
+    if(day.rest){ badge = `<div class="dh-badge rest">休息</div>`; }
+    else if(status === 'rest'){ badge = `<div class="dh-badge rest">今天休息</div>`; }
+    else if(status === 'alt'){ badge = `<div class="dh-badge alt">已替代</div>`; }
+    else if(c===1){ badge = `<div class="dh-badge done">已完成</div>`; }
+    else { badge = `<div class="dh-badge">${Math.round((c||0)*day.exercises.length)}/${day.exercises.length}</div>`; }
+
+    return `
+      <div class="day-card">
+        <div class="day-head" data-toggle="${idx}-${containerId}">
+          <div class="dh-left">
+            <div class="dh-name">${day.name}${idx===todayIdx?' · 今天':''}</div>
+            <div class="dh-type">${day.type}${day.place? ' · '+day.place : ''}</div>
+          </div>
+          ${badge}
+        </div>
+        <div class="ex-list ${idx===todayIdx?'open':''}" id="exlist-${idx}-${containerId}">
+          ${exerciseListHTML(day, idx, interactive)}
+          ${interactive ? perfBlockHTML(day, idx) : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  el.querySelectorAll("[data-toggle]").forEach(h=>{
+    h.addEventListener("click", ()=>{
+      const key = h.getAttribute("data-toggle");
+      const list = document.getElementById("exlist-"+key);
+      list.classList.toggle("open");
+    });
+  });
+
+  if(interactive){
+    el.querySelectorAll(".ex-row").forEach(row=>{
+      row.addEventListener("click", ()=>{
+        toggleCheck(parseInt(row.dataset.day), parseInt(row.dataset.ex));
+      });
+    });
+    el.querySelectorAll("[data-status]").forEach(p=>{
+      p.addEventListener("click", ()=>{
+        const [idx, key] = p.getAttribute("data-status").split(":");
+        setStatus(parseInt(idx), key);
+      });
+    });
+    el.querySelectorAll("[data-field]").forEach(inp=>{
+      const evt = (inp.tagName==="SELECT") ? "change" : "input";
+      inp.addEventListener(evt, ()=>{
+        const [idx, field] = inp.getAttribute("data-field").split(":");
+        setField(parseInt(idx), field, inp.value);
+      });
+    });
+  }
+}
+
+function updateStreak(){
+  const trainDays = PLAN.filter(d=>!d.rest).length;
+  let fullyDone = true;
+  PLAN.forEach((day, idx)=>{
+    if(day.rest) return;
+    if(dayCompletion(idx) < 1) fullyDone = false;
+  });
+  const wid = state.weekId;
+  if(fullyDone && state.lastCompleteWeek !== wid){
+    state.streak = (state.streak||0) + 1;
+    state.lastCompleteWeek = wid;
+    saveState(state);
+  }
+}
+
+/* ---------------- 每日 8:30 提醒（本地通知，最佳努力） ---------------- */
+function renderReminderUI(){
+  const btn = document.getElementById("reminderBtn");
+  const status = document.getElementById("reminderStatus");
+  const supported = 'Notification' in window;
+  if(!supported){
+    status.textContent = "此浏览器不支持通知";
+    btn.style.display = "none";
+    return;
+  }
+  if(Notification.permission === 'granted'){
+    status.textContent = "已开启，8:30 后打开APP会自动提醒";
+    btn.textContent = "已开启";
+    btn.classList.add("off");
+  } else if(Notification.permission === 'denied'){
+    status.textContent = "通知权限被拒绝，请到手机设置里为浏览器开启通知权限";
+    btn.textContent = "去设置";
+  } else {
+    status.textContent = "尚未开启";
+    btn.textContent = "开启提醒";
+    btn.classList.remove("off");
+  }
+}
+document.getElementById("reminderBtn").addEventListener("click", ()=>{
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'default'){
+    Notification.requestPermission().then(()=>{ renderReminderUI(); checkDailyReminder(); });
+  } else {
+    renderReminderUI();
+  }
+});
+
+function checkDailyReminder(){
+  if(!('Notification' in window)) return;
+  if(Notification.permission !== 'granted') return;
+  const now = new Date();
+  const past830 = (now.getHours() > 8) || (now.getHours() === 8 && now.getMinutes() >= 30);
+  if(!past830) return;
+  if(state.lastNotifiedDate === todayStr()) return;
+
+  const day = PLAN[todayIdx];
+  let body;
+  if(day.rest){
+    body = "今天是休息日，好好恢复～";
+  } else {
+    const list = day.exercises.map(e=>e.n).slice(0,3).join("、");
+    body = `${day.type} · ${list}${day.exercises.length>3?' 等':''}`;
+  }
+  try{
+    new Notification(`训练提醒 · ${day.name}`, { body, icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2314171C'/%3E%3Crect x='16' y='44' width='68' height='12' rx='4' fill='%23C9F04D'/%3E%3C/svg%3E" });
+    state.lastNotifiedDate = todayStr();
+    saveState(state);
+  }catch(e){}
+}
+
+function renderAll(){
+  renderHeader();
+  renderStats();
+  renderList("planList", false);
+  renderList("logList", true);
+  updateStreak();
+  renderHeader();
+  renderReminderUI();
+}
+
+/* ---------------- 导航 ---------------- */
+document.querySelectorAll("nav button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.getElementById("view-"+btn.dataset.view).classList.add("active");
+  });
+});
+document.getElementById("view-stats").classList.add("active");
+
+renderAll();
+checkDailyReminder();
+</script>
+</body>
+</html>
