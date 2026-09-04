@@ -25,23 +25,29 @@
     --muted:#8B93A1;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{margin:0;padding:0;height:100%; overflow:hidden;}
   body{
     background:var(--bg);
     color:var(--text);
     font-family:'Inter',-apple-system,sans-serif;
     display:flex;
     justify-content:center;
-    overflow-x:hidden;
   }
   #app{
     width:100%;
     max-width:480px;
-    min-height:100vh;
+    height:100vh;
+    height:100dvh;
     display:flex;
     flex-direction:column;
-    padding-bottom:calc(130px + env(safe-area-inset-bottom));
     position:relative;
+    overflow:hidden;
+  }
+  #scrollArea{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .num{font-family:'Bebas Neue',sans-serif; letter-spacing:0.5px;}
 
@@ -75,7 +81,7 @@
     margin-top:-4px;
   }
 
-  .view{display:none; padding:0 20px 40px;}
+  .view{display:none; padding:0 20px 24px;}
   .view.active{display:block;}
 
   /* ---- Widget preview card (Stats) ---- */
@@ -283,21 +289,19 @@
     resize:vertical;
   }
 
-  /* ---- Bottom nav ---- */
+  /* ---- Bottom nav (normal flow, always reserves its own space) ---- */
   nav{
-    position:fixed;
-    bottom:0; left:0; right:0;
+    flex-shrink:0;
     display:flex;
     justify-content:center;
-    background:rgba(20,23,28,0.92);
-    backdrop-filter:blur(10px);
+    background:rgba(20,23,28,0.98);
     border-top:1px solid var(--border);
     padding-bottom:env(safe-area-inset-bottom);
   }
   nav .inner{
     width:100%; max-width:480px;
     display:flex;
-    min-height:60px;
+    min-height:58px;
   }
   nav button{
     flex:1;
@@ -320,6 +324,7 @@
 </head>
 <body>
 <div id="app">
+<div id="scrollArea">
 
   <header>
     <div>
@@ -409,6 +414,8 @@
     </button>
   </div>
 </nav>
+
+</div>
 
 <script>
 /* ---------------- 数据：一周训练计划 ---------------- */
